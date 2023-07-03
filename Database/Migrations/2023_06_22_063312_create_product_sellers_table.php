@@ -23,6 +23,7 @@ return new class extends Migration
             $table->bigInteger('price_off')->nullable();
             $table->string('warranty')->nullable();
             $table->tinyInteger('status')->default(0);
+            $table->integer('sale_count')->default(0);
             $table->timestamps();
         });
     }

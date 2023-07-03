@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer('factor_id')->nullable();
             $table->integer('product_id')->nullable();
+            $table->integer('seller_product_id')->nullable();
             $table->integer('quantity')->nullable();
             $table->string('price')->nullable();
             $table->timestamps();

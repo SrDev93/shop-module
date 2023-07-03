@@ -23,6 +23,10 @@ return new class extends Migration
             $table->text('short_text')->nullable();
             $table->text('description')->nullable();
             $table->tinyInteger('status')->default(0);
+            $table->integer('visit')->default(0);
+            $table->integer('sale_count')->default(0);
+            $table->float('rating')->default(0);
+            $table->tinyInteger('suggestion')->default(0);
             $table->timestamps();
         });
     }

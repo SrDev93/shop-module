@@ -2,6 +2,7 @@
 
 namespace Modules\Shop\Entities;
 
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Account\Entities\User;
@@ -9,6 +10,7 @@ use Modules\Account\Entities\User;
 class Seller extends Model
 {
     use HasFactory;
+    use Sluggable;
 
     protected $guarded = ['id'];
 
@@ -25,5 +27,14 @@ class Seller extends Model
     public function products()
     {
         return $this->hasMany(ProductSeller::class);
+    }
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => 'name'
+            ]
+        ];
     }
 }

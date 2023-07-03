@@ -2,8 +2,10 @@
 
 namespace Modules\Shop\Entities;
 
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Modules\Account\Entities\User;
 use Modules\Base\Entities\Comment;
 use Modules\Base\Entities\Photo;
@@ -12,6 +14,7 @@ use Modules\Base\Entities\Visit;
 class Product extends Model
 {
     use HasFactory;
+    use Sluggable;
 
     protected $guarded = ['id'];
 
@@ -35,6 +38,30 @@ class Product extends Model
         return $this->hasMany(ProductSeller::class);
     }
 
+    public function getPriceAttribute()
+    {
+        if ($this->sellers()->whereNotNull('price_off')->first()){
+            return $this->sellers()->whereNotNull('price_off')->orderBy('price_off', 'ASC')->first();
+
+//            $item = $this->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+//                ->select('products.*', DB::raw('min(product_sellers.price_off) as min_product_price'))
+//                ->groupBy('products.id')
+//                ->orderBy('min_product_price', 'asc')
+//                ->first();
+//
+//            return $item->min_product_price;
+        }else{
+            return $this->sellers()->orderBy('price', 'ASC')->first();
+//            $item = $this->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+//                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'))
+//                ->groupBy('products.id')
+//                ->orderBy('min_product_price', 'asc')
+//                ->first();
+//
+//            return $item->min_product_price;
+        }
+    }
+
     public function properties()
     {
         return $this->hasMany(ProductProperty::class);
@@ -47,7 +74,7 @@ class Product extends Model
 
     public function comment()
     {
-        return $this->morphMany(Comment::class, 'comments')->where('status', 1);
+        return $this->morphMany(Comment::class, 'comments')->whereNull('parent_id')->where('status', 1);
     }
 
     public function visits() {
@@ -56,5 +83,14 @@ class Product extends Model
 
     public function photo() {
         return $this->morphMany(Photo::class, 'pictures');
+    }
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => 'name'
+            ]
+        ];
     }
 }

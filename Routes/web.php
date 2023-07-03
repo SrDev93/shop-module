@@ -31,3 +31,25 @@ Route::prefix('admin/shop')->group(function() {
     Route::patch('sellerProduct/{seller}/update/{ProductSeller}', 'SellerProductController@update')->name('sellerProduct.update');
     Route::delete('sellerProduct/{seller}/destroy/{ProductSeller}', 'SellerProductController@destroy')->name('sellerProduct.destroy');
 });
+
+Route::namespace('Front')->group(function() {
+    Route::get('checkout', 'ShopController@checkout')->name('checkout')->middleware('auth');
+    Route::post('submit-order', 'ShopController@submit_order')->name('submit-order')->middleware('auth');
+
+    Route::get('callback', 'ShopController@callback')->name('callback');
+    Route::get('success/{id}', 'ShopController@success')->name('success');
+
+    Route::get('add-to-wishlist/{product}','WishlistController@add')->name('add-to-wishlist');
+    Route::get('delete-wishlist/{wishlist}','WishlistController@delete')->name('delete-wishlist');
+
+    Route::get('add-to-compare/{product}','CompareController@add')->name('add-to-compare');
+    Route::get('delete-compare/{product}','CompareController@delete')->name('delete-compare');
+
+    Route::get('add-to-cart/{id}','ShopController@add')->name('add-to-cart');
+    Route::get('delete-from-cart/{basket}','ShopController@delete')->name('delete-from-cart');
+
+    Route::get('change-quantity/{id}/{action}', 'ShopController@change_quantity')->name('change-quantity');
+    Route::post('add-address','ShopController@add_address')->name('add-address');
+    Route::post('update-address/{id}','ShopController@update_address')->name('update-address');
+    Route::get('delete-address/{id}','ShopController@delete_address')->name('delete-address');
+});

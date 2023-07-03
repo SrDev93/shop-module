@@ -5,7 +5,7 @@ namespace Modules\Shop\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Basket extends Model
+class Wishlist extends Model
 {
     use HasFactory;
 
@@ -13,21 +13,11 @@ class Basket extends Model
 
     protected static function newFactory()
     {
-        return \Modules\Shop\Database\factories\BasketFactory::new();
-    }
-
-    public function factor()
-    {
-        return $this->belongsTo(Factor::class);
+        return \Modules\Shop\Database\factories\WishlistFactory::new();
     }
 
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function seller_product()
-    {
-        return $this->belongsTo(ProductSeller::class, 'seller_product_id', 'id');
     }
 }

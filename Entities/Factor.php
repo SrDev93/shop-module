@@ -19,7 +19,7 @@ class Factor extends Model
 
     public function baskets()
     {
-        return $this->hasMany(Basket::class);
+        return $this->hasMany(Basket::class)->has('product');
     }
 
     public function user()

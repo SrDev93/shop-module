@@ -55,13 +55,14 @@ class SellerProductController extends Controller
      */
     public function store(Request $request, Seller $seller)
     {
-        try {
+//        try {
 
             if (isset($request->product_id) and $request->product_id){
 
                 $price_off = null;
                 if ($request->off and $request->price){
                     $price_off = $request->price * $request->off / 100;
+                    $price_off = $request->price - $price_off;
                 }
 
                 $product_seller = ProductSeller::create([
@@ -110,10 +111,11 @@ class SellerProductController extends Controller
                 $price_off = null;
                 if ($request->off and $request->price){
                     $price_off = $request->price * $request->off / 100;
+                    $price_off = $request->price - $price_off;
                 }
 
                 $product_seller = ProductSeller::create([
-                    'product_id' => $request->product_id,
+                    'product_id' => $item->id,
                     'seller_id' => $seller->id,
                     'price' => $request->price,
                     'off' => $request->off,
@@ -124,9 +126,9 @@ class SellerProductController extends Controller
             }
 
             return redirect()->route('sellerProduct.index', $seller->id)->with('flash_message', 'با موفقیت انجام شد');
-        }catch (\Exception $e){
-            return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
-        }
+//        }catch (\Exception $e){
+//            return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
+//        }
     }
 
     /**
@@ -234,6 +236,7 @@ class SellerProductController extends Controller
             $price_off = null;
             if ($request->off and $request->price){
                 $price_off = $request->price * $request->off / 100;
+                $price_off = $request->price - $price_off;
             }
 
             $ProductSeller->update([
