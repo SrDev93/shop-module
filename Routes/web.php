@@ -18,8 +18,12 @@ Route::prefix('admin/shop')->group(function() {
 
     Route::resource('category', 'CategoryController');
     Route::post('category-sort', 'CategoryController@sort_item')->name('category-sort');
+
     Route::resource('product', 'ProductController');
     Route::get('product/status/{product}', 'ProductController@status')->name('product.status');
+
+    Route::resource('orders', 'OrderController');
+    Route::get('orders/status/{factor}', 'OrderController@status')->name('orders.status');
 
     Route::resource('seller', 'SellerController');
     Route::get('seller/status/{seller}', 'SellerController@status')->name('seller.status');
