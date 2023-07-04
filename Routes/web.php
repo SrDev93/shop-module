@@ -13,7 +13,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin/shop')->group(function() {
+Route::prefix('panel/shop')->group(function() {
     Route::resource('shop', 'ShopController');
 
     Route::resource('category', 'CategoryController');
