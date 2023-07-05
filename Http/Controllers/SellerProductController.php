@@ -55,7 +55,7 @@ class SellerProductController extends Controller
      */
     public function store(Request $request, Seller $seller)
     {
-//        try {
+        try {
 
             if (isset($request->product_id) and $request->product_id){
 
@@ -85,13 +85,13 @@ class SellerProductController extends Controller
                     'img' => (isset($request->img) ? file_store($request->img, 'assets/uploads/photos/product_img/', 'photo_') : null),
                 ]);
 
-                if (isset($request->property_title)) {
-                    foreach ($request->property_title as $key => $property_title) {
-                        if ($property_title) {
+                if (isset($request->property_value)) {
+                    foreach ($request->property_value as $key => $property_value) {
+                        if ($property_value) {
                             $pp = ProductProperty::create([
                                 'product_id' => $item->id,
-                                'title' => $property_title,
-                                'value' => $request->property_value[$key]
+                                'property_id' => $request->property_id[$key],
+                                'value' => $property_value
                             ]);
                         }
                     }
@@ -126,9 +126,9 @@ class SellerProductController extends Controller
             }
 
             return redirect()->route('sellerProduct.index', $seller->id)->with('flash_message', 'با موفقیت انجام شد');
-//        }catch (\Exception $e){
-//            return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
-//        }
+        }catch (\Exception $e){
+            return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
+        }
     }
 
     /**
@@ -168,69 +168,73 @@ class SellerProductController extends Controller
     {
         try {
 
-//            $product = Product::findOrFail($ProductSeller->product_id);
-//
-//            $product->update([
-//                'user_id' => Auth::id(),
-//                'category_id' => $request->category_id,
-//                'name' => $request->name,
-//                'short_text' => $request->short_text,
-//                'description' => $request->description,
-//            ]);
-//
-//            if (isset($request->img)) {
-//                if ($product->img){
-//                    File::delete($product->img);
-//                }
-//                $product->img = file_store($request->img, 'assets/uploads/photos/product_img/', 'photo_');
-//                $product->save();
-//            }
-//
-//            if (isset($request->property_title)) {
-//                foreach ($request->property_title as $key => $property_title) {
-//                    if (isset($request->property_id[$key])){
-//                        $pp = ProductProperty::findOrFail($request->property_id[$key]);
-//                        if ($property_title){
-//                            $pp->update([
-//                                'title' => $property_title,
-//                                'value' => $request->property_value[$key]
-//                            ]);
-//                        }else{
-//                            $pp->delete();
-//                        }
-//                    }else {
-//                        if ($property_title) {
-//                            $pp = ProductProperty::create([
-//                                'product_id' => $product->id,
-//                                'title' => $property_title,
-//                                'value' => $request->property_value[$key]
-//                            ]);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if (isset($request->photo)) {
-//                foreach ($request->photo as $key => $photo) {
-//                    if (isset($request->photo[$key])) {
-//                        if (isset($request->photo_id[$key])) {
-//                            $ph = Photo::findOrFail($request->photo_id[$key]);
-//                            if ($ph->path){
-//                                File::delete($ph->path);
-//                            }
-//                            $ph->path = file_store($photo, 'assets/uploads/photos/product_photos/', 'photo_');
-//                            $ph->save();
-//
-//                        } else {
-//                            if (isset($photo) and $photo) {
-//                                $ph = new Photo();
-//                                $ph->path = file_store($photo, 'assets/uploads/photos/product_photos/', 'photo_');
-//                                $product->photo()->save($ph);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            $product = Product::findOrFail($ProductSeller->product_id);
+
+            $product->update([
+                'user_id' => Auth::id(),
+                'category_id' => $request->category_id,
+                'name' => $request->name,
+                'short_text' => $request->short_text,
+                'description' => $request->description,
+            ]);
+
+            if (isset($request->img)) {
+                if ($product->img){
+                    File::delete($product->img);
+                }
+                $product->img = file_store($request->img, 'assets/uploads/photos/product_img/', 'photo_');
+                $product->save();
+            }
+
+            if (!isset($request->old_property_id) and count($product->properties)){
+                $product->properties()->delete();
+            }
+
+            if (isset($request->property_value)) {
+                foreach ($request->property_value as $key => $property_value) {
+                    if (isset($request->old_property_id[$key])){
+                        $pp = ProductProperty::findOrFail($request->old_property_id[$key]);
+                        if ($property_value){
+                            $pp->update([
+                                'property_id' => $request->property_id[$key],
+                                'value' => $property_value
+                            ]);
+                        }else{
+                            $pp->delete();
+                        }
+                    }else {
+                        if ($property_value) {
+                            $pp = ProductProperty::create([
+                                'product_id' => $product->id,
+                                'property_id' => $request->property_id[$key],
+                                'value' => $property_value
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            if (isset($request->photo)) {
+                foreach ($request->photo as $key => $photo) {
+                    if (isset($request->photo[$key])) {
+                        if (isset($request->photo_id[$key])) {
+                            $ph = Photo::findOrFail($request->photo_id[$key]);
+                            if ($ph->path){
+                                File::delete($ph->path);
+                            }
+                            $ph->path = file_store($photo, 'assets/uploads/photos/product_photos/', 'photo_');
+                            $ph->save();
+
+                        } else {
+                            if (isset($photo) and $photo) {
+                                $ph = new Photo();
+                                $ph->path = file_store($photo, 'assets/uploads/photos/product_photos/', 'photo_');
+                                $product->photo()->save($ph);
+                            }
+                        }
+                    }
+                }
+            }
 
 
             $price_off = null;

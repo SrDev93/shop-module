@@ -21,6 +21,7 @@ Route::prefix('panel/shop')->group(function() {
 
     Route::resource('product', 'ProductController');
     Route::get('product/status/{product}', 'ProductController@status')->name('product.status');
+    Route::get('product/property/{id}', 'ProductController@fetch_property')->name('product.property');
 
     Route::resource('orders', 'OrderController');
     Route::get('orders/status/{factor}', 'OrderController@status')->name('orders.status');
@@ -56,4 +57,22 @@ Route::namespace('Front')->group(function() {
     Route::post('add-address','ShopController@add_address')->name('add-address');
     Route::post('update-address/{id}','ShopController@update_address')->name('update-address');
     Route::get('delete-address/{id}','ShopController@delete_address')->name('delete-address');
+
+
+
+
+//    /**
+//     * Shop Pages Routes
+//     */
+//// Shop main page
+//    Route::get('products', [ShopController::class, 'index_all'])->name('all-products');
+//    Route::get('products/{slug?}', [ShopController::class, 'index'])->name('products');
+//// Shop Single
+//    Route::get('product/{slug?}', [ShopController::class, 'show'])->name('product');
+//    Route::get('quick-view/{slug?}', [ShopController::class, 'quick_view'])->name('quick-view');
+//
+//    Route::get('festival', [ShopController::class, 'festival'])->name('festival');
+//
+//// Search page
+//    Route::get('search', [ShopController::class, 'search'])->name('search');
 });

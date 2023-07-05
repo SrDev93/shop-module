@@ -5,7 +5,7 @@ namespace Modules\Shop\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ProductProperty extends Model
+class Property extends Model
 {
     use HasFactory;
 
@@ -13,16 +13,16 @@ class ProductProperty extends Model
 
     protected static function newFactory()
     {
-        return \Modules\Shop\Database\factories\ProductPropertyFactory::new();
+        return \Modules\Shop\Database\factories\PropertyFactory::new();
     }
 
-    public function product()
+    public function products()
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(ProductProperty::class);
     }
 
-    public function property()
+    public function properties()
     {
-        return $this->belongsTo(Property::class);
+        return $this->hasMany(ProductProperty::class);
     }
 }

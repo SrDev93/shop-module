@@ -5,8 +5,10 @@ namespace Modules\Shop\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Modules\Shop\Entities\Category;
+use Modules\Shop\Entities\Property;
 
 class CategoryController extends Controller
 {
@@ -43,7 +45,33 @@ class CategoryController extends Controller
                 'slug' => $request->slug,
                 'photo' => (isset($request->photo)?file_store($request->photo, 'assets/uploads/photos/category_photo/', 'photo_'):null),
                 'banner' => (isset($request->banner)?file_store($request->banner, 'assets/uploads/photos/category_banner/', 'photo_'):null),
+                'banner2' => (isset($request->banner2)?file_store($request->banner2, 'assets/uploads/photos/category_banner/', 'photo_'):null),
             ]);
+
+            if (isset($request->property)){
+                foreach ($request->property as $key => $property){
+                    if (isset($request->property_id[$key])){
+                        $cat_pro = Property::find($request->property_id[$key]);
+                        if ($property){
+                            $cat_pro->name = $property;
+                            $cat_pro->filter = $request->filter[$key];
+                            $cat_pro->save();
+                        }else{
+                            $cat_pro->delete();
+                        }
+
+                    }else {
+                        if ($property) {
+                            $cat_pro = Property::create([
+                                'user_id' => Auth::id(),
+                                'category_id' => $ac->id,
+                                'name' => $property,
+                                'filter' => $request->filter[$key]
+                            ]);
+                        }
+                    }
+                }
+            }
 
             return redirect()->route('category.index')->with('flash_message', 'با موفقیت ثبت شد');
         }catch (\Exception $e){
@@ -94,7 +122,39 @@ class CategoryController extends Controller
                 }
                 $category->banner = file_store($request->banner, 'assets/uploads/photos/category_banner/', 'photo_');
             }
+            if (isset($request->banner2)) {
+                if ($category->banner2){
+                    File::delete($category->banner2);
+                }
+                $category->banner2 = file_store($request->banner2, 'assets/uploads/photos/category_banner/', 'photo_');
+            }
+
             $category->save();
+
+            if (isset($request->property)){
+                foreach ($request->property as $key => $property){
+                    if (isset($request->property_id[$key])){
+                        $cat_pro = Property::find($request->property_id[$key]);
+                        if ($property){
+                            $cat_pro->name = $property;
+                            $cat_pro->filter = $request->filter[$key];
+                            $cat_pro->save();
+                        }else{
+                            $cat_pro->delete();
+                        }
+
+                    }else {
+                        if ($property) {
+                            $cat_pro = Property::create([
+                                'user_id' => Auth::id(),
+                                'category_id' => $category->id,
+                                'name' => $property,
+                                'filter' => $request->filter[$key]
+                            ]);
+                        }
+                    }
+                }
+            }
 
             return redirect()->route('category.index')->with('flash_message', 'بروزرسانی با موفقیت انجام شد');
         }catch (\Exception $e){

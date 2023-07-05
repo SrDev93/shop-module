@@ -5,6 +5,7 @@ namespace Modules\Shop\Entities;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Modules\Account\Entities\User;
 use Modules\Base\Entities\Comment;
@@ -15,6 +16,7 @@ class Product extends Model
 {
     use HasFactory;
     use Sluggable;
+    use SoftDeletes;
 
     protected $guarded = ['id'];
 

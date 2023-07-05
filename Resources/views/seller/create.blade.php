@@ -38,16 +38,16 @@
                                 <input type="text" name="name" class="form-control" id="name" required value="{{ old('name') }}">
                                 <div class="invalid-feedback">لطفا نام برند یا فروشگاه را وارد کنید</div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label for="logo" class="form-label">لوگو</label>
                                 <input type="file" name="logo" class="form-control" aria-label="لوگو" accept="image/*" required>
                                 <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="banner" class="form-label">بنر</label>
-                                <input type="file" name="banner" class="form-control" aria-label="بنر" accept="image/*" required>
-                                <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>
-                            </div>
+{{--                            <div class="col-md-6">--}}
+{{--                                <label for="banner" class="form-label">بنر</label>--}}
+{{--                                <input type="file" name="banner" class="form-control" aria-label="بنر" accept="image/*" required>--}}
+{{--                                <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>--}}
+{{--                            </div>--}}
 
 
                             <div class="col-md-6">

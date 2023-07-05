@@ -59,22 +59,24 @@
                                 </thead>
                                 <tbody>
                                 @foreach($item->baskets as $basket)
-                                    <tr>
-                                        <td>
-                                            @if($basket->product)
-                                                @if($basket->product->img)
-                                                    <img src="{{ url($basket->product->img) }}?width=50">
+                                    @if(in_array($basket->id,$baskets))
+                                        <tr>
+                                            <td>
+                                                @if($basket->product)
+                                                    @if($basket->product->img)
+                                                        <img src="{{ url($basket->product->img) }}?width=50">
+                                                    @endif
+                                                    {{ optional($basket->product)->name }}
+                                                    <h6>
+                                                        <small>فروشنده : {{ $basket->seller_product->seller->name }}</small>
+                                                    </h6>
                                                 @endif
-                                                {{ optional($basket->product)->name }}
-                                                <h6>
-                                                    <small>فروشنده : {{ $basket->seller_product->seller->name }}</small>
-                                                </h6>
-                                            @endif
-                                        </td>
-                                        <td><span class="numberPrice">{{ $basket->price / $basket->quantity }}</span> تومان </td>
-                                        <td>{{ $basket->quantity }}</td>
-                                        <td><span class="numberPrice">{{ $basket->price }}</span> تومان </td>
-                                    </tr>
+                                            </td>
+                                            <td><span class="numberPrice">{{ $basket->price / $basket->quantity }}</span> تومان </td>
+                                            <td>{{ $basket->quantity }}</td>
+                                            <td><span class="numberPrice">{{ $basket->price }}</span> تومان </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                                 </tbody>
                             </table>

@@ -27,7 +27,7 @@
                             @if($product)
                             <div class="col-md-6">
                                 <label for="category_id" class="form-label">دسته بندی</label>
-                                <select name="category_id" class="form-control">
+                                <select name="category_id" class="form-control category">
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}" @if($product->category_id == $category->id) selected @endif>{{ $category->name }}</option>
                                     @endforeach
@@ -62,26 +62,27 @@
                                 <div class="invalid-feedback">لطفا توضیحات کامل را وارد کنید</div>
                             </div>
 
+                            <div class="row-divider"></div>
                             <div class="properties row col-md-12">
                                 <div class="col-md-12">
                                     <label for="description" class="form-label">ویژگی های محصول</label>
-                                    <button type="button" class="btn btn-success add-property"><i class="fa fa-plus-circle"></i> افزودن ویژگی </button>
+                                    {{--                                    <button type="button" class="btn btn-success add-property"><i class="fa fa-plus-circle"></i> افزودن ویژگی </button>--}}
                                 </div>
 
-                                @foreach($product->properties as $property)
-                                    <input type="hidden" name="property_id[]" value="{{ $property->id }}">
-                                    <div class="col-md-6">
-                                        <label for="property_title" class="form-label">عنوان ویژگی</label>
-                                        <input type="text" name="property_title[]" class="form-control" value="{{ $property->title }}">
-                                        <div class="invalid-feedback">لطفا عنوان ویژگی را وارد کنید</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="property_value" class="form-label">مقدار ویژگی</label>
-                                        <input type="text" name="property_value[]" class="form-control" value="{{ $property->value }}">
-                                        <div class="invalid-feedback">لطفا مقدار ویژگی را وارد کنید</div>
-                                    </div>
-                                @endforeach
+                                @if($product->category)
+                                    @foreach($product->category->properties as $key => $property)
+                                        <div class="col-md-6">
+                                            <label for="property_title" class="form-label">{{ $property->name }}</label>
+                                            @if(isset($product->properties[$key]))
+                                                <input type="hidden" name="old_property_id[]" value="{{ $product->properties[$key]->id }}">
+                                            @endif
+                                            <input type="hidden" name="property_id[]" value="{{ $property->id }}">
+                                            <input type="text" name="property_value[]" class="form-control" @if(isset($product->properties[$key])) value="{{ $product->properties[$key]->value }}" @endif>
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
+                            <div class="row-divider"></div>
 
                             <div class="photos row col-md-12">
                                 <div class="col-md-12">
@@ -210,6 +211,28 @@
                                     <input type="file" name="photo[]" class="form-control" accept="image/*">
                                     <div class="invalid-feedback">لطفا یک تصویر را وارد کنید</div>
                                 </div>`);
+            })
+
+            $('.category').change(function (){
+                let id = $(this).val();
+                $('.properties').empty();
+
+                $.ajax({
+                    url: '{{ route('product.property', '') }}/'+id,
+                    type:'GET',
+                    dataType:'json',
+                    success: function (res){
+                        if(res.success) {
+                            $.each(res.data, function (index, item){
+                                $('.properties').append(`<div class="col-md-6">
+                                    <label for="property_title" class="form-label">${item.name}</label>
+                                    <input type="hidden" name="property_id[]" value="${item.id}">
+                                    <input type="text" name="property_value[]" class="form-control">
+                                </div>`)
+                            })
+                        }
+                    }
+                })
             })
         </script>
     @endpush

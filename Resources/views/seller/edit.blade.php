@@ -38,7 +38,7 @@
                                 <input type="text" name="name" class="form-control" id="name" required value="{{ $seller->name }}">
                                 <div class="invalid-feedback">لطفا نام برند یا فروشگاه را وارد کنید</div>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-11">
                                 <label for="logo" class="form-label">لوگو</label>
                                 <input type="file" name="logo" class="form-control" aria-label="لوگو" accept="image/*" @if(!$seller->logo) required @endif>
                                 <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>
@@ -50,17 +50,17 @@
                                 @endif
                             </div>
 
-                            <div class="col-md-5">
-                                <label for="banner" class="form-label">بنر</label>
-                                <input type="file" name="banner" class="form-control" aria-label="بنر" accept="image/*" @if(!$seller->banner) required @endif>
-                                <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>
-                            </div>
-                            <div class="col-md-1">
-                                @if($seller->banner)
-                                <label for="banner" class="form-label">بنر فعلی</label>
-                                <img src="{{ url($seller->banner) }}" style="max-width: 100%;">
-                                @endif
-                            </div>
+{{--                            <div class="col-md-5">--}}
+{{--                                <label for="banner" class="form-label">بنر</label>--}}
+{{--                                <input type="file" name="banner" class="form-control" aria-label="بنر" accept="image/*" @if(!$seller->banner) required @endif>--}}
+{{--                                <div class="invalid-feedback">لطفا یک تصویر انتخاب کنید</div>--}}
+{{--                            </div>--}}
+{{--                            <div class="col-md-1">--}}
+{{--                                @if($seller->banner)--}}
+{{--                                <label for="banner" class="form-label">بنر فعلی</label>--}}
+{{--                                <img src="{{ url($seller->banner) }}" style="max-width: 100%;">--}}
+{{--                                @endif--}}
+{{--                            </div>--}}
 
 
 

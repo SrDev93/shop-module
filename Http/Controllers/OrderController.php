@@ -5,7 +5,10 @@ namespace Modules\Shop\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Modules\Shop\Entities\Basket;
 use Modules\Shop\Entities\Factor;
+use Modules\Shop\Entities\ProductSeller;
 
 class OrderController extends Controller
 {
@@ -15,7 +18,16 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $items = Factor::where('status', '!=', 0)->get();
+        if (Auth::user()->hasrole('seller')){
+            if (!Auth::user()->seller){
+                return redirect()->back()->with('err_message', 'لطفا پروفایل خود را تکمیل نمایید');
+            }
+            $product_sellers = ProductSeller::where('seller_id', Auth::user()->seller->id)->pluck('id')->toArray();
+            $baskets = Basket::whereIn('seller_product_id', $product_sellers)->pluck('factor_id')->toArray();
+            $items = Factor::whereIn('id', $baskets)->where('status', '!=', 0)->get();
+        }else {
+            $items = Factor::where('status', '!=', 0)->get();
+        }
 
         return view('shop::orders.index', get_defined_vars());
     }
@@ -47,6 +59,16 @@ class OrderController extends Controller
     public function show(Factor $order)
     {
         $item = $order;
+
+        if (Auth::user()->hasrole('seller')){
+            if (!Auth::user()->seller){
+                return redirect()->back()->with('err_message', 'لطفا پروفایل خود را تکمیل نمایید');
+            }
+            $product_sellers = ProductSeller::where('seller_id', Auth::user()->seller->id)->pluck('id')->toArray();
+            $baskets = Basket::where('factor_id', $item->id)->whereIn('seller_product_id', $product_sellers)->pluck('id')->toArray();
+        }else{
+            $baskets = $item->baskets()->pluck('id')->toArray();
+        }
 
         return view('shop::orders.show', get_defined_vars());
     }

@@ -25,16 +25,44 @@
                                 <input type="text" name="slug" class="form-control" id="slug" required value="{{ old('slug') }}">
                                 <div class="invalid-feedback">لطفا نامک را وارد کنید</div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="photo" class="form-label">تصویر شاخص</label>
+                            <div class="col-md-4">
+                                <label for="photo" class="form-label">تصویر شاخص ( 120 * 250 )</label>
                                 <input type="file" name="photo" class="form-control" id="photo" required accept="image/*">
                                 <div class="invalid-feedback">لطفا تصویر شاخص را انتخاب کنید</div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="banner" class="form-label">بنر</label>
+                            <div class="col-md-4">
+                                <label for="banner" class="form-label">بنر ( 254 * 1272 ) یا ( 246 * 616 )</label>
                                 <input type="file" name="banner" class="form-control" id="banner" required accept="image/*">
                                 <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
                             </div>
+                            <div class="col-md-4">
+                                <label for="banner2" class="form-label">بنر ( 246 * 616 )</label>
+                                <input type="file" name="banner2" class="form-control" id="banner2" accept="image/*">
+                                <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
+                            </div>
+
+                            <div class="row-divider"></div>
+                            <div class="col-md-12">
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-primary add-property"><i class="fa fa-plus-circle"></i> افزودن ویژگی</button>
+                                </div>
+                                <div class="row properties">
+                                    <div class="col-md-4">
+                                        <label for="property" class="form-label">ویژگی</label>
+                                        <input type="text" name="property[]" class="form-control">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="property" class="form-label">فیلتر</label>
+                                        <select name="filter[]" class="form-control">
+                                            <option value="0">فقط جهت نمایش</option>
+                                            <option value="1">جهت نمایش و فیلتر</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row-divider"></div>
                             <div class="col-12">
                                 <button class="btn btn-primary" type="submit">ارسال فرم</button>
                                 @csrf
@@ -45,7 +73,23 @@
             </div>
         </div>
         <!-- ROW CLOSED -->
-
-
     </div>
+
+    @push('scripts')
+        <script>
+            $('.add-property').click(function (){
+                $('.properties').append(`<div class="col-md-4">
+                                        <label for="property" class="form-label">ویژگی</label>
+                                        <input type="text" name="property[]" class="form-control">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="property" class="form-label">فیلتر</label>
+                                        <select name="filter[]" class="form-control">
+                                            <option value="0">فقط جهت نمایش</option>
+                                            <option value="1">جهت نمایش و فیلتر</option>
+                                        </select>
+                                    </div>`);
+            })
+        </script>
+    @endpush
 @endsection

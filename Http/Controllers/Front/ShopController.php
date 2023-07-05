@@ -2,21 +2,342 @@
 
 namespace Modules\Shop\Http\Controllers\Front;
 
+use App\Models\Banner;
+use Carbon\Carbon;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
+use Modules\Base\Entities\Setting;
+use Modules\Base\Entities\Visit;
 use Modules\IrCity\Entities\ProvinceCity;
 use Modules\Shop\Entities\Basket;
+use Modules\Shop\Entities\Category;
 use Modules\Shop\Entities\Factor;
 use Modules\Shop\Entities\Product;
+use Modules\Shop\Entities\ProductProperty;
 use Modules\Shop\Entities\ProductSeller;
 use Modules\Shop\Entities\Transaction;
 use Modules\Shop\Entities\UserAddress;
 
 class ShopController extends Controller
 {
+    protected $per_page = 20;
+
+
+    // shop view methods
+
+    public function index_all()
+    {
+        $rating = [0,1,2,3,4,5];
+        if (isset($_GET['rating'])){
+            $rating = $_GET['rating'];
+        }
+
+        if (isset($_GET['categories'])){
+            $cat_filters = $_GET['categories'];
+        }else{
+            $cat_filters = Category::pluck('id')->toArray();
+        }
+
+        if (isset($_GET['min_price']) and isset($_GET['max_price'])){
+            $min_price = (int)$_GET['min_price'];
+            $max_price = (int)$_GET['max_price'];
+        }else{
+            $min_price = 0;
+            $max_price = ProductSeller::max('price');
+        }
+
+        $product_sellers = ProductSeller::whereBetween('price', [$min_price, $max_price])->orWhereBetween('price_off', [$min_price, $max_price])->pluck('product_id')->toArray();
+
+        $sort = 'newest';
+        if (isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+        }
+        if ($sort == 'popular'){
+            $items = Product::whereStatus(1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->orderBy('visit', 'DESC')->paginate($this->per_page);
+        }elseif ($sort == 'price_asc'){
+
+
+            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('min_product_price', 'asc')
+                ->paginate($this->per_page);
+
+
+        }elseif ($sort == 'price_desc'){
+
+            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('max_product_price', 'desc')
+                ->paginate($this->per_page);
+
+        }else{ // newest
+            $items = Product::whereStatus(1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->latest()->paginate($this->per_page);
+        }
+
+        $banner = Banner::wherePage('shop')->wherePosition('sidebar')->first();
+        $categories = Category::whereNull('parent_id')->get();
+
+        $per_page = $this->per_page;
+        $page = (int)(isset($_GET['page'])?$_GET['page']:'1');
+        $total = Product::whereStatus(1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->count();
+        $view = $per_page * $page;
+        if ($view > $total){
+            $view = $total;
+        }
+
+//        $five_star = Product::where('rating','>=',5)->count();
+//        $four_star = Product::where('rating','>=',4)->where('rating','<',5)->count();
+//        $three_star = Product::where('rating','>=',3)->where('rating','<',4)->count();
+//        $two_star = Product::where('rating','>=',2)->where('rating','<',3)->count();
+//        $one_star = Product::where('rating','>=',1)->where('rating','<',2)->count();
+
+        return view('shop.index', get_defined_vars());
+    }
+
+    public function index($slug)
+    {
+        $category = Category::whereSlug($slug)->firstOrFail();
+
+        if (isset($_GET['categories'])){
+            $cat_filters = $_GET['categories'];
+        }else{
+            $cat_filters = Category::pluck('id')->toArray();
+        }
+
+        $rating = [0,1,2,3,4,5];
+        if (isset($_GET['rating'])){
+            $rating = $_GET['rating'];
+        }
+
+        if (isset($_GET['min_price']) and isset($_GET['max_price'])){
+            $min_price = (int)$_GET['min_price'];
+            $max_price = (int)$_GET['max_price'];
+        }else{
+            $min_price = 0;
+            $max_price = ProductSeller::max('price');
+        }
+
+        $product_sellers = ProductSeller::whereBetween('price', [$min_price, $max_price])->orWhereBetween('price_off', [$min_price, $max_price])->pluck('product_id')->toArray();
+
+        if (isset($_GET['properties'])){
+            $properties = $_GET['properties'];
+            $product_properties = ProductProperty::whereIn('id', $properties)->pluck('product_id')->toArray();
+            $prop_products = Product::whereStatus(1)->whereIn('id', $product_properties)->pluck('id')->toArray();
+        }else{
+            $prop_products = Product::whereStatus(1)->where('category_id', $category->id)->pluck('id')->toArray();
+        }
+
+        $filtered_array = [];
+        foreach ($prop_products as $prop_product){
+            if (in_array($prop_product, $product_sellers)){
+                array_push($filtered_array, $prop_product);
+            }
+        }
+
+
+        $sort = 'newest';
+        if (isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+        }
+        if ($sort == 'popular'){
+            $items = Product::whereStatus(1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->orderBy('visit', 'DESC')->paginate($this->per_page);
+        }elseif ($sort == 'price_asc'){
+
+
+            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('min_product_price', 'asc')
+                ->paginate($this->per_page);
+
+
+        }elseif ($sort == 'price_desc'){
+
+            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('max_product_price', 'desc')
+                ->paginate($this->per_page);
+
+        }else{ // newest
+            $items = Product::whereStatus(1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->latest()->paginate($this->per_page);
+        }
+
+        $banner = Banner::wherePage('shop')->wherePosition('sidebar')->first();
+        $categories = Category::whereNull('parent_id')->get();
+
+        $per_page = $this->per_page;
+        $page = (int)(isset($_GET['page'])?$_GET['page']:'1');
+        $total = Product::whereStatus(1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->count();
+        $view = $per_page * $page;
+        if ($view > $total){
+            $view = $total;
+        }
+
+//        $five_star = Product::where('category_id', $category->id)->where('rating','>=',5)->count();
+//        $four_star = Product::where('category_id', $category->id)->where('rating','>=',4)->where('rating','<',5)->count();
+//        $three_star = Product::where('category_id', $category->id)->where('rating','>=',3)->where('rating','<',4)->count();
+//        $two_star = Product::where('category_id', $category->id)->where('rating','>=',2)->where('rating','<',3)->count();
+//        $one_star = Product::where('category_id', $category->id)->where('rating','>=',1)->where('rating','<',2)->count();
+
+        return view('shop.index', get_defined_vars());
+    }
+
+    public function show($slug)
+    {
+        $item = Product::whereSlug($slug)->firstOrFail();
+
+        $relateds = Product::where('category_id', $item->category_id)->latest()->take(10)->get();
+
+
+        $ip = \Request::ip();
+        $visit = Visit::where('ip', $ip)->where('visits_type', 'Modules\Blogs\Entities\Blog')->where('visits_id', $item->id)->whereDate('created_at', Carbon::today())->first();
+        if (!$visit) {
+            $vis = new Visit();
+            $vis->ip = $ip;
+            $item->visits()->save($vis);
+
+            $item->visit += 1;
+            $item->save();
+        }
+
+        return view('shop.show', get_defined_vars());
+    }
+
+    public function quick_view($slug)
+    {
+        $item = Product::whereSlug($slug)->firstOrFail();
+
+        return response()->json(view('partials.product_quick_view', get_defined_vars())->render());
+    }
+
+    public function festival()
+    {
+        $sort = 'newest';
+        if (isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+        }
+
+        if ($sort == 'popular'){
+            $items = Product::whereStatus(1)->whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->orderBy('visit', 'DESC')->paginate($this->per_page);
+        }elseif ($sort == 'price_asc'){
+
+
+            $items = Product::where('products.status',1)->whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('min_product_price', 'asc')
+                ->paginate($this->per_page);
+
+
+        }elseif ($sort == 'price_desc'){
+
+            $items = Product::where('products.status',1)->whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('max_product_price', 'desc')
+                ->paginate($this->per_page);
+
+        }else{ // newest
+            $items = Product::whereStatus(1)->whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->latest()->paginate($this->per_page);
+        }
+
+        $banner = Banner::wherePage('shop')->wherePosition('sidebar')->first();
+        $categories = Category::whereNull('parent_id')->get();
+
+        $per_page = $this->per_page;
+        $page = (int)(isset($_GET['page'])?$_GET['page']:'1');
+        $total = Product::whereStatus(1)->whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->count();
+        $view = $per_page * $page;
+        if ($view > $total){
+            $view = $total;
+        }
+
+//        $five_star = Product::whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->where('rating','>=',5)->count();
+//        $four_star = Product::whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->where('rating','>=',4)->where('rating','<',5)->count();
+//        $three_star = Product::whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->where('rating','>=',3)->where('rating','<',4)->count();
+//        $two_star = Product::whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->where('rating','>=',2)->where('rating','<',3)->count();
+//        $one_star = Product::whereHas('sellers', function ($query){$query->whereNotNull('price_off');})->where('rating','>=',1)->where('rating','<',2)->count();
+
+        return view('shop.index', get_defined_vars());
+    }
+
+    public function search(Request $request)
+    {
+        if (isset($request->q)){
+            $query = $request->q;
+        }else{
+            $query = null;
+        }
+
+        if (isset($_GET['categories'])){
+            $cat_filters = $_GET['categories'];
+        }else{
+            $cat_filters = Category::pluck('id')->toArray();
+        }
+
+        if (isset($_GET['min_price']) and isset($_GET['max_price'])){
+            $min_price = (int)$_GET['min_price'];
+            $max_price = (int)$_GET['max_price'];
+        }else{
+            $min_price = 0;
+            $max_price = ProductSeller::max('price');
+        }
+
+        $product_sellers = ProductSeller::whereBetween('price', [$min_price, $max_price])->orWhereBetween('price_off', [$min_price, $max_price])->pluck('product_id')->toArray();
+
+        $sort = 'newest';
+        if (isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+        }
+        if ($sort == 'popular'){
+            $items = Product::whereStatus(1)->where('name', 'LIKE', '%'.$query.'%')->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->orderBy('visit', 'DESC')->paginate($this->per_page);
+        }elseif ($sort == 'price_asc'){
+
+
+            $items = Product::where('products.status',1)->where('name', 'LIKE', '%'.$query.'%')->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('min_product_price', 'asc')
+                ->paginate($this->per_page);
+
+
+        }elseif ($sort == 'price_desc'){
+
+            $items = Product::where('products.status',1)->where('name', 'LIKE', '%'.$query.'%')->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('max_product_price', 'desc')
+                ->paginate($this->per_page);
+
+        }else{ // newest
+            $items = Product::whereStatus(1)->where('name', 'LIKE', '%'.$query.'%')->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->latest()->paginate($this->per_page);
+        }
+
+        $banner = Banner::wherePage('shop')->wherePosition('sidebar')->first();
+        $categories = Category::whereNull('parent_id')->get();
+
+        $per_page = $this->per_page;
+        $page = (int)(isset($_GET['page'])?$_GET['page']:'1');
+        $total = Product::whereStatus(1)->where('name', 'LIKE', '%'.$query.'%')->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->count();
+        $view = $per_page * $page;
+        if ($view > $total){
+            $view = $total;
+        }
+
+        return view('shop.search', get_defined_vars());
+    }
+
+
+
+    // shop action methods
+
     public function checkout()
     {
         if (!Cookie::has('user')) {
@@ -29,6 +350,20 @@ class ShopController extends Controller
             return redirect()->back()->with('err_message', 'سبد خرید شما خالی می باشد');
         }
 
+        $basket_array = [];
+        foreach ($factor->baskets as $basket){
+            if($basket->seller_product->seller_id){
+                if (!in_array($basket->seller_product->seller_id, $basket_array)){
+                    array_push($basket_array, $basket->seller_product->seller_id);
+                }
+            }
+        }
+
+        $setting = Setting::first();
+        $uniq_shipping_cost = $setting->shipping_cost?$setting->shipping_cost:20000;
+        $shipping_cost = $uniq_shipping_cost * count($basket_array);
+
+        $factor->shipping_cost = $shipping_cost;
         $factor->user_id = Auth::id();
         $factor->save();
 

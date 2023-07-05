@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('user_session')->nullable();
             $table->integer('address_id')->nullable();
             $table->string('price')->nullable();
+            $table->string('shipping_cost')->default(0);
             $table->tinyInteger('status')->default(0);
             $table->enum('pay_status', ['paid', 'unpaid'])->default('unpaid');
             $table->string('description', 512)->nullable();

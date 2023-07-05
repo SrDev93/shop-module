@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('slug')->nullable();
             $table->string('photo')->nullable();
             $table->string('banner')->nullable();
+            $table->string('banner2')->nullable();
             $table->timestamps();
         });
     }

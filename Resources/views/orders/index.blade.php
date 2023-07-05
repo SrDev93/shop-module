@@ -46,10 +46,12 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($item->status != 4)
-                                                <a href="{{ route('orders.status', $item->id) }}" class="btn btn-warning fs-14 text-white edit-icn" title="تغییر وضعیت">
-                                                    <i class="fa fa-level-up"></i>
-                                                </a>
+                                            @if(!Auth::user()->hasrole('seller'))
+                                                @if($item->status != 4)
+                                                    <a href="{{ route('orders.status', $item->id) }}" class="btn btn-warning fs-14 text-white edit-icn" title="تغییر وضعیت">
+                                                        <i class="fa fa-level-up"></i>
+                                                    </a>
+                                                @endif
                                             @endif
                                             <a href="{{ route('orders.show', $item->id) }}" class="btn btn-primary fs-14 text-white edit-icn" title="مشاهده">
                                                 <i class="fe fe-eye"></i>
