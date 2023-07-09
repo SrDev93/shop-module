@@ -71,6 +71,12 @@
                                 <div class="invalid-feedback">لطفا لینک صفحه اینستاگرام خود را وارد کنید</div>
                             </div>
 
+                            <div class="col-md-12">
+                                <label for="docs" class="form-label">آپلود مدارک</label>
+                                <input type="file" name="docs[]" class="form-control" id="docs" multiple>
+                                <div class="invalid-feedback">لطفا مدارک خود را انتخاب کنید</div>
+                            </div>
+
 
                             <div class="col-12">
                                 <button class="btn btn-primary" type="submit">ارسال فرم</button>

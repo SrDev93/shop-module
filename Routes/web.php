@@ -28,6 +28,7 @@ Route::prefix('panel/shop')->group(function() {
 
     Route::resource('seller', 'SellerController');
     Route::get('seller/status/{seller}', 'SellerController@status')->name('seller.status');
+    Route::get('seller/doc/delete/{id}', 'SellerController@doc_delete')->name('seller.doc.delete');
 
     Route::get('sellerProduct/{seller}', 'SellerProductController@index')->name('sellerProduct.index');
     Route::get('sellerProduct/{seller}/create', 'SellerProductController@create')->name('sellerProduct.create');
@@ -35,6 +36,12 @@ Route::prefix('panel/shop')->group(function() {
     Route::get('sellerProduct/{seller}/edit/{ProductSeller}', 'SellerProductController@edit')->name('sellerProduct.edit');
     Route::patch('sellerProduct/{seller}/update/{ProductSeller}', 'SellerProductController@update')->name('sellerProduct.update');
     Route::delete('sellerProduct/{seller}/destroy/{ProductSeller}', 'SellerProductController@destroy')->name('sellerProduct.destroy');
+
+    Route::get('amazing', 'ShopController@amazing')->name('amazing');
+    Route::post('amazing/update', 'ShopController@amazing_update')->name('amazing.update');
+
+    Route::get('sales-report', 'ReportController@sales')->name('sales-report');
+    Route::get('financial-report', 'ReportController@financial')->name('financial-report');
 });
 
 Route::namespace('Front')->group(function() {

@@ -25,21 +25,21 @@
                                 <input type="text" name="slug" class="form-control" id="slug" required value="{{ old('slug') }}">
                                 <div class="invalid-feedback">لطفا نامک را وارد کنید</div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="photo" class="form-label">تصویر شاخص ( 120 * 250 )</label>
                                 <input type="file" name="photo" class="form-control" id="photo" required accept="image/*">
                                 <div class="invalid-feedback">لطفا تصویر شاخص را انتخاب کنید</div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="banner" class="form-label">بنر ( 254 * 1272 ) یا ( 246 * 616 )</label>
+                            <div class="col-md-6">
+                                <label for="banner" class="form-label">بنر ( 254 * 1272 )</label>
                                 <input type="file" name="banner" class="form-control" id="banner" required accept="image/*">
                                 <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="banner2" class="form-label">بنر ( 246 * 616 )</label>
-                                <input type="file" name="banner2" class="form-control" id="banner2" accept="image/*">
-                                <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
-                            </div>
+{{--                            <div class="col-md-4">--}}
+{{--                                <label for="banner2" class="form-label">بنر ( 246 * 616 )</label>--}}
+{{--                                <input type="file" name="banner2" class="form-control" id="banner2" accept="image/*">--}}
+{{--                                <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>--}}
+{{--                            </div>--}}
 
                             <div class="row-divider"></div>
                             <div class="col-md-12">

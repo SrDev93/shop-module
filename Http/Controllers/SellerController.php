@@ -5,10 +5,12 @@ namespace Modules\Shop\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Modules\Account\Entities\User;
 use Modules\Shop\Entities\ProductSeller;
 use Modules\Shop\Entities\Seller;
+use Modules\Shop\Entities\SellerDoc;
 
 class SellerController extends Controller
 {
@@ -58,7 +60,20 @@ class SellerController extends Controller
                 'banner' => (isset($request->banner)?file_store($request->banner, 'assets/uploads/photos/seller_banner/', 'photo_'):null),
             ]);
 
-            return redirect()->route('seller.index')->with('flash_message', 'با موفقیت انجام شد');
+            if (isset($request->docs)){
+                foreach ($request->docs as $doc){
+                    $seller_doc = new SellerDoc();
+                    $seller_doc->seller_id = $seller->id;
+                    $seller_doc->path = file_store($doc, 'assets/uploads/documents/sellers/', 'doc_');
+                    $seller_doc->save();
+                }
+            }
+
+            if (Auth::user()->hasrole('seller')){
+                return redirect()->route('admin.home')->with('flash_message', 'با موفقیت انجام شد');
+            }else {
+                return redirect()->route('seller.index')->with('flash_message', 'با موفقیت انجام شد');
+            }
         }catch (\Exception $e){
             return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
         }
@@ -118,6 +133,15 @@ class SellerController extends Controller
             }
             $seller->save();
 
+            if (isset($request->docs)){
+                foreach ($request->docs as $doc){
+                    $seller_doc = new SellerDoc();
+                    $seller_doc->seller_id = $seller->id;
+                    $seller_doc->path = file_store($doc, 'assets/uploads/documents/sellers/', 'doc_');
+                    $seller_doc->save();
+                }
+            }
+
             return redirect()->route('seller.index')->with('flash_message', 'با موفقیت انجام شد');
         }catch (\Exception $e){
             return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
@@ -148,6 +172,18 @@ class SellerController extends Controller
             $seller->save();
 
             return redirect()->route('seller.index')->with('flash_message', 'با موفقیت انجام شد');
+        }catch (\Exception $e){
+            return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
+        }
+    }
+
+    public function doc_delete($id)
+    {
+        $item = SellerDoc::findOrFail($id);
+        try {
+            $item->delete();
+
+            return redirect()->back()->with('flash_message', 'با موفقیت حذف شد');
         }catch (\Exception $e){
             return redirect()->back()->withInput()->with('err_message', 'خطایی رخ داده است، لطفا مجددا تلاش نمایید');
         }

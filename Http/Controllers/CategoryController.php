@@ -44,8 +44,7 @@ class CategoryController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'photo' => (isset($request->photo)?file_store($request->photo, 'assets/uploads/photos/category_photo/', 'photo_'):null),
-                'banner' => (isset($request->banner)?file_store($request->banner, 'assets/uploads/photos/category_banner/', 'photo_'):null),
-                'banner2' => (isset($request->banner2)?file_store($request->banner2, 'assets/uploads/photos/category_banner/', 'photo_'):null),
+                'banner' => (isset($request->banner)?file_store($request->banner, 'assets/uploads/photos/category_banner/', 'photo_'):null)
             ]);
 
             if (isset($request->property)){
@@ -121,12 +120,6 @@ class CategoryController extends Controller
                     File::delete($category->banner);
                 }
                 $category->banner = file_store($request->banner, 'assets/uploads/photos/category_banner/', 'photo_');
-            }
-            if (isset($request->banner2)) {
-                if ($category->banner2){
-                    File::delete($category->banner2);
-                }
-                $category->banner2 = file_store($request->banner2, 'assets/uploads/photos/category_banner/', 'photo_');
             }
 
             $category->save();

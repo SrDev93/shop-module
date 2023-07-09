@@ -61,7 +61,7 @@ class ShopController extends Controller
         }elseif ($sort == 'price_asc'){
 
 
-            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
                 ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
                 ->groupBy('products.id')
                 ->orderBy('min_product_price', 'asc')
@@ -70,7 +70,7 @@ class ShopController extends Controller
 
         }elseif ($sort == 'price_desc'){
 
-            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+            $items = Product::where('products.status',1)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
                 ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
                 ->groupBy('products.id')
                 ->orderBy('max_product_price', 'desc')
@@ -150,7 +150,7 @@ class ShopController extends Controller
         }elseif ($sort == 'price_asc'){
 
 
-            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('products.id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
                 ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
                 ->groupBy('products.id')
                 ->orderBy('min_product_price', 'asc')
@@ -159,7 +159,7 @@ class ShopController extends Controller
 
         }elseif ($sort == 'price_desc'){
 
-            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+            $items = Product::where('products.status',1)->where('category_id', $category->id)->whereIn('products.id', $filtered_array)->whereIn('rating', $rating)->whereIn('category_id', $cat_filters)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
                 ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
                 ->groupBy('products.id')
                 ->orderBy('max_product_price', 'desc')
@@ -332,6 +332,66 @@ class ShopController extends Controller
         }
 
         return view('shop.search', get_defined_vars());
+    }
+
+    public function amazing_sales()
+    {
+        if (isset($_GET['categories'])){
+            $cat_filters = $_GET['categories'];
+        }else{
+            $cat_filters = Category::pluck('id')->toArray();
+        }
+
+        if (isset($_GET['min_price']) and isset($_GET['max_price'])){
+            $min_price = (int)$_GET['min_price'];
+            $max_price = (int)$_GET['max_price'];
+        }else{
+            $min_price = 0;
+            $max_price = ProductSeller::max('price');
+        }
+
+        $product_sellers = ProductSeller::whereNotNull('amazing_date')->whereBetween('price', [$min_price, $max_price])->orWhereBetween('price_off', [$min_price, $max_price])->pluck('product_id')->toArray();
+
+        $sort = 'newest';
+        if (isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+        }
+        if ($sort == 'popular'){
+            $items = Product::whereStatus(1)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->orderBy('visit', 'DESC')->paginate($this->per_page);
+        }elseif ($sort == 'price_asc'){
+
+
+            $items = Product::where('products.status',1)->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('min_product_price', 'asc')
+                ->paginate($this->per_page);
+
+
+        }elseif ($sort == 'price_desc'){
+
+            $items = Product::where('products.status',1)->whereIn('category_id', $cat_filters)->whereIn('products.id', $product_sellers)->leftJoin('product_sellers', 'products.id', '=', 'product_sellers.product_id')
+                ->select('products.*', DB::raw('min(product_sellers.price) as min_product_price'), DB::raw('max(product_sellers.price) as max_product_price'))
+                ->groupBy('products.id')
+                ->orderBy('max_product_price', 'desc')
+                ->paginate($this->per_page);
+
+        }else{ // newest
+            $items = Product::whereStatus(1)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->latest()->paginate($this->per_page);
+        }
+
+        $banner = Banner::wherePage('shop')->wherePosition('sidebar')->first();
+        $categories = Category::whereNull('parent_id')->get();
+
+        $per_page = $this->per_page;
+        $page = (int)(isset($_GET['page'])?$_GET['page']:'1');
+        $total = Product::whereStatus(1)->whereIn('category_id', $cat_filters)->whereIn('id', $product_sellers)->count();
+        $view = $per_page * $page;
+        if ($view > $total){
+            $view = $total;
+        }
+
+        return view('shop.vip', get_defined_vars());
     }
 
 

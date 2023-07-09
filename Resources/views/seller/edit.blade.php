@@ -85,6 +85,29 @@
                                 <div class="invalid-feedback">لطفا لینک صفحه اینستاگرام خود را وارد کنید</div>
                             </div>
 
+                            <div class="col-md-12">
+                                <label for="docs" class="form-label">آپلود مدارک</label>
+                                <input type="file" name="docs[]" class="form-control" id="docs" multiple>
+                                <div class="invalid-feedback">لطفا مدارک خود را انتخاب کنید</div>
+                            </div>
+
+                            <div class="row-divider"></div>
+                            <div class="col-md-12">
+                                @if(count($seller->docs))
+                                    <label for="docs" class="form-label">مدارک آپلود شده:</label>
+                                    <ul style="list-style: auto; margin-right: 50px;">
+                                        @foreach($seller->docs as $doc)
+                                            @if($doc->path)
+                                                <li class="mb-3">
+                                                    <a href="{{ url($doc->path) }}" target="_blank">مشاهده</a>
+                                                    <a href="{{ route('seller.doc.delete', $doc->id) }}" onclick="return confirm('برای حذف اطمینان دارید؟');" class="btn btn-danger mx-3"><i class="fa fa-trash"></i></a>
+                                                </li>
+                                            @endif
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+
 
                             <div class="col-12">
                                 <button class="btn btn-primary" type="submit">ارسال فرم</button>

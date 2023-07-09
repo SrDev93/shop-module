@@ -25,7 +25,7 @@
                                 <input type="text" name="slug" class="form-control" id="slug" required value="{{ $category->slug }}">
                                 <div class="invalid-feedback">لطفا نامک را وارد کنید</div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <label for="photo" class="form-label">تصویر شاخص</label>
                                 <input type="file" name="photo" class="form-control" id="photo" @if(!$category->photo) required @endif accept="image/*">
                                 <div class="invalid-feedback">لطفا تصویر شاخص را انتخاب کنید</div>
@@ -37,7 +37,7 @@
                                 @endif
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <label for="banner" class="form-label">بنر</label>
                                 <input type="file" name="banner" class="form-control" id="banner" @if(!$category->banner) required @endif accept="image/*">
                                 <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
@@ -49,17 +49,17 @@
                                 @endif
                             </div>
 
-                            <div class="col-md-3">
-                                <label for="banner2" class="form-label">بنر ( 246 * 616 )</label>
-                                <input type="file" name="banner2" class="form-control" id="banner2" accept="image/*">
-                                <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>
-                            </div>
-                            <div class="col-md-1">
-                                @if($category->banner2)
-                                    <label for="banner2" class="form-label">بنر فعلی</label>
-                                    <img src="{{ url($category->banner2) }}" style="max-width: 100%">
-                                @endif
-                            </div>
+{{--                            <div class="col-md-3">--}}
+{{--                                <label for="banner2" class="form-label">بنر ( 246 * 616 )</label>--}}
+{{--                                <input type="file" name="banner2" class="form-control" id="banner2" accept="image/*">--}}
+{{--                                <div class="invalid-feedback">لطفا بنر را انتخاب کنید</div>--}}
+{{--                            </div>--}}
+{{--                            <div class="col-md-1">--}}
+{{--                                @if($category->banner2)--}}
+{{--                                    <label for="banner2" class="form-label">بنر فعلی</label>--}}
+{{--                                    <img src="{{ url($category->banner2) }}" style="max-width: 100%">--}}
+{{--                                @endif--}}
+{{--                            </div>--}}
 
                             <div class="row-divider"></div>
                             <div class="col-md-12">

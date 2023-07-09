@@ -37,4 +37,9 @@ class Seller extends Model
             ]
         ];
     }
+
+    public function docs()
+    {
+        return $this->hasMany(SellerDoc::class);
+    }
 }
